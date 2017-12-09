@@ -25,6 +25,9 @@ def nand(x, y):
 def to8bits(num):
     return '{0:08b}'.format(num)
 
+def tobase10(num):
+    return int(num, 2)
+
 
 
 def add(x, y):

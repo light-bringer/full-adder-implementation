@@ -310,6 +310,3 @@ def EightBitAdder(a, b):    # a, b four char strings like '0110'
                                                 int(F2.S.value), int(F1.S.value), int(F0.S.value))
 
     return sum
-
-
-print(EightBitAdder("11110000", "00001111"))
