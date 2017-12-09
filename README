@@ -1,0 +1,23 @@
+*Adder.py*
+ - has all the GATES/Logical Circuits as classes
+ - has the 8 bit Ripple Carry Adder logic
+
+*Utilities.py*
+ - has all the bit conversion utility functions
+
+*main.py*
+ - Main function through which the program runs
+
+*testAdder.py*
+ - run this module to test if the accuracy of the logic is correct
+ - generates random number in a range and then checks the accuracy
+
+
+
+To run the main program : 
+main #: python3 main.py
+
+To test the code : 
+test #:python3 testAdder.py
+
+Compatibility : Python3.4 and above
