@@ -4,7 +4,7 @@ from Utilities import *
 
 
 class Connector:
-    def __init__ (self, owner, name, activates=0, monitor=True):
+    def __init__ (self, owner, name, activates=0, monitor=False):
         self.value = None
         self.owner = owner
         self.name = name
@@ -26,8 +26,9 @@ class Connector:
             self.owner.evaluate()
         if self.monitor:
             print("Connector %s-%s set to %d" % (self.owner.name, self.name,self.value))
-            for con in self.connects:
+        for con in self.connects:
                 con.set(value)
+
     def show(self):
         print(self.value)
         print(self.owner)
@@ -119,18 +120,18 @@ class Xor(Gate2):
     '''
     def __init__(self, name):
         Gate2.__init__(self, name)
-        self.A1 = And("A1")
-        self.A2 = And("A2")
+        self.AND1 = And("AND1")
+        self.AND2 = And("AND2")
         self.I1 = Not("I1")
         self.I2 = Not("I2")
-        self.O1 = Or("O1")
-        self.A.connect([self.A1.A, self.I2.A])
-        self.B.connect([self.I1.A, self.A2.A])
-        self.I1.B.connect([self.A1.B ])
-        self.I2.B.connect([self.A2.B ])
-        self.A1.C.connect([self.O1.A ])
-        self.A2.C.connect([self.O1.B ])
-        self.O1.C.connect([self.C ])
+        self.OR = Or("OR")
+        self.A.connect([self.AND1.A, self.I2.A])
+        self.B.connect([self.I1.A, self.AND2.A])
+        self.I1.B.connect([self.AND1.B ])
+        self.I2.B.connect([self.AND2.B ])
+        self.AND1.C.connect([self.OR.A ])
+        self.AND2.C.connect([self.OR.B ])
+        self.OR.C.connect([self.C ])
 
 
 
@@ -163,12 +164,12 @@ class HalfAdder(LC):
         self.B = Connector(self, 'B', 1)
         self.S = Connector(self, 'S')
         self.C = Connector(self,'C')
-        self.X1= Xor("X1")
-        self.A1= And("A1")
-        self.A.connect([self.X1.A, self.A1.A])
-        self.B.connect([self.X1.B, self.A1.B])
-        self.X1.C.connect([self.S])
-        self.A1.C.connect([self.C])
+        self.XOR= Xor("XOR")
+        self.AND= And("AND")
+        self.A.connect([self.XOR.A, self.AND.A])
+        self.B.connect([self.XOR.B, self.AND.B])
+        self.XOR.C.connect([self.S])
+        self.AND.C.connect([self.C])
 
 
 class FullAdderHA(LC):
@@ -178,24 +179,59 @@ class FullAdderHA(LC):
     output : Sum, Cout
     '''
     # One bit adder, A,B,Cin in. Sum and Cout out
-    def __init__(self, name):
+    def __init__(self, name, mon=0):
         LC.__init__(self, name)
-        self.A = Connector(self, 'A', 1, monitor=1)
-        self.B = Connector(self, 'B', 1, monitor=1)
-        self.Cin = Connector(self, 'Cin', 1, monitor=1)
-        self.S = Connector(self, 'S', monitor=1)
-        self.Cout = Connector(self, 'Cout', monitor=1)
-        self.H1 = HalfAdder("H1")
-        self.H2 = HalfAdder("H2")
-        self.O1 = Or("O1")
-        self.A.connect([self.H1.A ])
-        self.B.connect([self.H1.B ])
-        self.Cin.connect([self.H2.A ])
-        self.H1.S.connect([self.H2.B ])
-        self.H1.C.connect([self.O1.B])
-        self.H2.C.connect([self.O1.A])
-        self.H2.S.connect([self.S])
-        self.O1.C.connect([self.Cout])
+        self.A = Connector(self, 'A', 1, monitor=mon)
+        self.B = Connector(self, 'B', 1, monitor=mon)
+        self.Cin = Connector(self, 'Cin', 1, monitor=mon)
+        self.S = Connector(self, 'S', monitor=mon)
+        self.Cout = Connector(self, 'Cout', monitor=mon)
+        self.HA1 = HalfAdder("HA1")
+        self.HA2 = HalfAdder("HA2")
+        self.OR = Or("OR")
+        self.A.connect([self.HA1.A ])
+        self.B.connect([self.HA1.B ])
+        self.Cin.connect([self.HA2.A ])
+        self.HA1.S.connect([self.HA2.B ])
+        self.HA1.C.connect([self.OR1.B])
+        self.HA2.C.connect([self.OR1.A])
+        self.HA2.S.connect([self.S])
+        self.OR.C.connect([self.Cout])
+
+
+
+class FullAdder(LC):         # One bit adder, A,B,Cin in. Sum and Cout out
+    def __init__(self, name, mon=0):
+        # Defining the GATES here
+        LC.__init__(self, name)
+        self.A = Connector(self, 'A', 1, monitor=mon)
+        self.B = Connector(self, 'B', 1, monitor=mon)
+        self.Cin = Connector(self, 'Cin', 1, monitor=mon)
+        self.S = Connector(self, 'S', monitor=mon)
+        self.Cout = Connector(self, 'Cout', monitor=mon)
+        self.XOR1 = Xor("XOR1")
+        self.XOR2 = Xor("XOR2")
+        self.OR = Or("OR")
+        self.AND1 = And("AND1")
+        self.AND2 = And("AND2")
+        # Starting with the connections
+        self.A.connect([self.XOR1.A])
+        self.B.connect([self.XOR1.B])
+        self.A.connect([self.AND2.A])
+        self.B.connect([self.AND2.B])
+
+        self.XOR1.C.connect([self.XOR2.A])
+        self.Cin.connect([self.XOR2.B])
+
+        self.XOR1.C.connect([self.AND1.A])
+        self.Cin.connect([self.AND1.B])
+
+        self.AND1.C.connect([self.OR.A])
+        self.AND2.C.connect([self.OR.B])
+
+        self.XOR2.C.connect([self.S])
+        self.OR.C.connect([self.Cout])
+
 
 
 def FourBitAdder(a, b):      # a, b four char strings like '0110'
@@ -227,7 +263,6 @@ def FourBitAdder(a, b):      # a, b four char strings like '0110'
                                                 int(F2.S.value), int(F1.S.value), int(F0.S.value))
 
     return sum
-
 
 
 
@@ -277,6 +312,4 @@ def EightBitAdder(a, b):    # a, b four char strings like '0110'
     return sum
 
 
-
-
-print(EightBitAdder('00000111', '00000001'))
+print(EightBitAdder("11110000", "00001111"))
